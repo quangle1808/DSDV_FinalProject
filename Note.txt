@@ -1,0 +1,12 @@
+1) Horizontal Bar chart:
+    Bao gồm file: Total_Sales_by_Country.html
+2) Bidirectional Horizontal Bar chart:
+    Bao gồm Product_Sales.html (Dùng để làm Product GrossSales and Profit)
+3) Stacked Horizontal Bar Chart:
+    Bao gồm file Percentage_of_sales.html
+4) Center Allign Bar Chart
+    Bao gồm file Unit_Sold.html
+5) Line Chart
+    Bao Gồm Profits_Ovetime.html
+6) Spider Chart
+    Bao gồm file Discount_Impact.html
