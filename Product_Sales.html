@@ -1,17 +1,133 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
 <style> 
-
-.bar { fill: steelblue; }
-.label { font-family: Arial; font-size: 12px; fill: black;}
+    .bar {
+      fill-opacity: 0.6;
+    }
+    .bar:hover {
+      fill-opacity: 1;
+    }
+    .gross-sales {
+      fill: steelblue;
+    }
+    .profit {
+      fill: green;
+    }
+    .label {
+      font-size: 12px;
+      fill: black;
+      text-anchor: middle;
+    }
+    .axis path,
+    .axis line {
+      display: none;
+    }
 </style>
 <body>
     <title>
-        Product Sales
+        Product Gross Sales and Profit
     </title>
-    <h1>Product Sales</h1>
-    <script src="//d3js.org/d3.v4.min.js"></script>
+    <h1>Product Gross Sales and Profit</h1>
+    <script src="//d3js.org/d3.v5.min.js"></script>
+    <svg width="960" height="500"></svg>
     <script>
-        
+ // Set dimensions and margins
+    const margin = { top: 20, right: 30, bottom: 40, left: 100 },
+     width = 960 - margin.left - margin.right,
+     height = 500 - margin.top - margin.bottom;
+
+  // Create SVG container
+  const svg = d3.select("svg")
+         .attr("width", width + margin.left + margin.right)
+         .attr("height", height + margin.top + margin.bottom)
+         .append("g")
+         .attr("transform", `translate(${margin.left},${margin.top})`);
+
+  // Load data
+  d3.csv("sale_data.csv").then(data => {
+   // Initialize aggregated data array
+   const products = Array.from(new Set(data.map(d => d.Product)));
+   const aggregatedData = products.map(product => {
+    const filteredData = data.filter(d => d.Product === product);
+    const totalGrossSales = d3.sum(filteredData, d => +d['Gross Sales']);
+    const totalProfit = d3.sum(filteredData, d => +d.Profit);
+    return { Product: product, GrossSales: totalGrossSales, Profit: totalProfit };
+   });
+
+   // Set the scales
+   const x = d3.scaleLinear()
+         .domain([0, d3.max(aggregatedData, d => d.GrossSales)])
+         .range([0, width / 2 - 10]);
+
+   const x2 = d3.scaleLinear()
+         .domain([0, d3.max(aggregatedData, d => d.Profit)])
+         .range([0, width / 2 - 10]);
+
+   const y = d3.scaleBand()
+         .domain(aggregatedData.map(d => d.Product))
+         .range([height, 0])
+         .padding(0.1);
+
+   // Add Y axis (only ticks, no lines)
+   svg.append("g")
+     .call(d3.axisLeft(y).tickSize(0).tickPadding(6));
+
+   // Add bars for Gross Sales
+   svg.selectAll(".bar-gross-sales")
+     .data(aggregatedData)
+     .enter()
+     .append("rect")
+     .attr("class", "bar gross-sales")
+     .attr("x", d => width / 2 - x(d.GrossSales))
+     .attr("y", d => y(d.Product))
+     .attr("width", d => x(d.GrossSales))
+     .attr("height", y.bandwidth());
+
+   // Add bars for Profit
+   svg.selectAll(".bar-profit")
+     .data(aggregatedData)
+     .enter()
+     .append("rect")
+     .attr("class", "bar profit")
+     .attr("x", width / 2)
+     .attr("y", d => y(d.Product))
+     .attr("width", d => x2(d.Profit))
+     .attr("height", y.bandwidth());
+
+   // Add labels for Gross Sales
+   svg.selectAll(".label-gross-sales")
+     .data(aggregatedData)
+     .enter()
+     .append("text")
+     .attr("class", "label")
+     .attr("x", d => width / 2 - x(d.GrossSales) - 5)
+     .attr("y", d => y(d.Product) + y.bandwidth() / 2 + 5)
+     .text(d => d.GrossSales);
+
+   // Add labels for Profit
+   svg.selectAll(".label-profit")
+     .data(aggregatedData)
+     .enter()
+     .append("text")
+     .attr("class", "label")
+     .attr("x", d => width / 2 + x2(d.Profit) + 5)
+     .attr("y", d => y(d.Product) + y.bandwidth() / 2 + 5)
+     .text(d => d.Profit);
+
+   // Add labels
+   svg.append("text")
+     .attr("class", "axis-label")
+     .attr("x", width / 4)
+     .attr("y", height + margin.bottom / 2)
+     .text("Gross Sales");
+
+   svg.append("text")
+     .attr("class", "axis-label")
+     .attr("x", width * 3 / 4)
+     .attr("y", height + margin.bottom / 2)
+     .text("Profit");
+  }).catch(error => {
+   console.error('Error loading or parsing data:', error);
+  });
     </script>
 </body>
