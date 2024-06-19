@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sum of Units Sold and Sum of Profit Over Time</title>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .axis-label {
+            font-size: 12px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Sum of Units Sold and Sum of Profit Over Time</h1>
+    <div id="chart"></div>
+
+    <script>
+        // Set the dimensions and margins of the graph
+        const margin = {top: 20, right: 50, bottom: 30, left: 50},
+              width = 960 - margin.left - margin.right,
+              height = 500 - margin.top - margin.bottom;
+
+        // Append the svg object to the body of the page
+        const svg = d3.select("#chart")
+            .append("svg")
+              .attr("width", width + margin.left + margin.right)
+              .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+              .attr("transform", `translate(${margin.left},${margin.top})`);
+
+        // Parse the Data
+        d3.csv("sum_of_profit_and_unit_sold.csv").then(data => {
+            const parseDate = d3.timeParse("%b-%y");
+            const formatDate = d3.timeFormat("%b-%y");
+
+            // Get the keys (excluding the first column)
+            const keys = data.columns.slice(1);
+
+            // Process data
+            const unitsSold = keys.map(key => ({date: parseDate(key), value: +data[0][key]}));
+            const profit = keys.map(key => ({date: parseDate(key), value: +data[1][key]}));
+
+            // Add X axis
+            const x = d3.scaleTime()
+                .domain(d3.extent(unitsSold, d => d.date))
+                .range([0, width]);
+            svg.append("g")
+                .attr("transform", `translate(0,${height})`)
+                .call(d3.axisBottom(x).tickFormat(formatDate));
+
+            // Add Y axis for units sold
+            const yLeft = d3.scaleLinear()
+                .domain([0, d3.max(unitsSold, d => d.value)])
+                .range([height, 0]);
+            svg.append("g")
+                .attr("class", "axis")
+                .call(d3.axisLeft(yLeft))
+                .append("text")
+                .attr("class", "axis-label")
+                .attr("transform", "rotate(-90)")
+                .attr("y", -40)
+                .attr("dy", ".71em")
+                .style("text-anchor", "end")
+                .text("Units Sold");
+
+            // Add Y axis for profit
+            const yRight = d3.scaleLinear()
+                .domain([0, d3.max(profit, d => d.value)])
+                .range([height, 0]);
+            svg.append("g")
+                .attr("class", "axis")
+                .attr("transform", `translate(${width},0)`)
+                .call(d3.axisRight(yRight))
+                .append("text")
+                .attr("class", "axis-label")
+                .attr("transform", "rotate(-90)")
+                .attr("y", 40)
+                .attr("dy", ".71em")
+                .style("text-anchor", "end")
+                .text("Profit");
+
+            // Add the line for units sold
+            svg.append("path")
+                .datum(unitsSold)
+                .attr("fill", "none")
+                .attr("stroke", "black")
+                .attr("stroke-width", 1.5)
+                .attr("d", d3.line()
+                    .x(d => x(d.date))
+                    .y(d => yLeft(d.value))
+                );
+
+            // Add the line for profit
+            svg.append("path")
+                .datum(profit)
+                .attr("fill", "none")
+                .attr("stroke", "green")
+                .attr("stroke-width", 1.5)
+                .attr("d", d3.line()
+                    .x(d => x(d.date))
+                    .y(d => yRight(d.value))
+                );
+        });
+    </script>
+</body>
+</html>
