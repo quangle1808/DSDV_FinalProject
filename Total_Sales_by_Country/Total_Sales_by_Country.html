@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Total Sales by Country</title>
+    <title>Horizontal Bar Chart with D3.js</title>
     <script src="https://d3js.org/d3.v6.min.js"></script>
     <style>
         .bar {
@@ -13,6 +13,12 @@
             font: 14px sans-serif;
             text-anchor: end;
         }
+        .h1 {
+  color: rgb(54, 37, 40);
+  font-size: 2em;
+  font-weight: bold;
+  font: Arial;
+        }
         .axis line,
         .axis path {
             display: none;
@@ -21,6 +27,12 @@
 </head>
 <body>
     <h1>Total Sales by Country</h1>
+    <label for="sortOrder">Sort by:</label>
+    <select id="sortOrder">
+        <option value="ascending">Ascending Sales</option>
+        <option value="descending">Descending Sales</option>
+    </select>
+
     <script>
         // Set dimensions and margins
         const margin = {top: 20, right: 30, bottom: 40, left: 90};
@@ -35,31 +47,33 @@
             .append("g")
             .attr("transform", `translate(${margin.left},${margin.top})`);
 
-        // Parse the Data
-        d3.csv("Total_Sales_by_Country.csv").then(data => {
+        // Global variables for scales and axes
+        let x, y, xAxis, yAxis;
 
+        // Function to render the chart
+        function render(data) {
             // Add X axis
-            const x = d3.scaleLinear()
+            x = d3.scaleLinear()
                 .domain([0, d3.max(data, d => +d.Sales)])
                 .range([0, width]);
 
-            svg.append("g")
+            xAxis = svg.append("g")
                 .attr("transform", `translate(0, ${height})`)
                 .call(d3.axisBottom(x).ticks(0))
                 .attr("class", "axis");
 
             // Add Y axis
-            const y = d3.scaleBand()
+            y = d3.scaleBand()
                 .range([0, height])
                 .domain(data.map(d => d.Country))
                 .padding(.1);
 
-            svg.append("g")
+            yAxis = svg.append("g")
                 .call(d3.axisLeft(y).ticks(0))
                 .attr("class", "axis");
 
             // Bars
-            svg.selectAll("myRect")
+            svg.selectAll(".bar")
                 .data(data)
                 .enter()
                 .append("rect")
@@ -70,7 +84,7 @@
                 .attr("class", "bar");
 
             // Add numbers inside bars
-            svg.selectAll("myText")
+            svg.selectAll(".label")
                 .data(data)
                 .enter()
                 .append("text")
@@ -79,6 +93,45 @@
                 .attr("y", d => y(d.Country) + y.bandwidth() / 2)
                 .attr("dy", ".35em")
                 .text(d => d.Sales);
+        }
+
+        // Function to update the chart
+        function update(data) {
+            y.domain(data.map(d => d.Country));
+
+            svg.selectAll(".bar")
+                .data(data)
+                .transition()
+                .duration(500)
+                .attr("y", d => y(d.Country))
+                .attr("width", d => x(d.Sales));
+
+            svg.selectAll(".label")
+                .data(data)
+                .transition()
+                .duration(500)
+                .attr("y", d => y(d.Country) + y.bandwidth() / 2)
+                .attr("x", d => x(d.Sales) - 5)
+                .text(d => d.Sales);
+
+            yAxis.transition().duration(500).call(d3.axisLeft(y).ticks(0));
+        }
+
+        // Load the data and render the chart
+        d3.csv("Total_Sales_by_Country.csv").then(data => {
+            data.forEach(d => d.Sales = +d.Sales);
+
+            // Initial render
+            render(data);
+
+            // Event listener for sort order
+            d3.select("#sortOrder").on("change", function() {
+                const order = d3.select(this).property("value");
+                const sortedData = data.sort((a, b) => {
+                    return order === "ascending" ? a.Sales - b.Sales : b.Sales - a.Sales;
+                });
+                update(sortedData);
+            });
         });
     </script>
 </body>

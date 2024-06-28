@@ -1,0 +1,19 @@
+.textGrossSales {
+  fill: white;
+  text-anchor: middle;
+}
+.textProfit {
+  fill: black;
+  text-anchor: start;
+}
+.axis line {
+  display: none;
+}
+h1 {
+  color: rgb(54, 37, 40);
+  font-size: 2em;
+  font-weight: bold;
+}
+body {
+  background-color: rgb(202, 231, 145);
+}

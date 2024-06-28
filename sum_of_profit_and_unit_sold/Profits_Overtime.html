@@ -13,11 +13,24 @@
             font-size: 12px;
             font-weight: bold;
         }
+        .legend {
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .legend rect {
+            width: 15px;
+            height: 15px;
+            margin-right: 5px;
+        }
+        .legend text {
+            vertical-align: middle;
+        }
     </style>
 </head>
 <body>
     <h1>Sum of Units Sold and Sum of Profit Over Time</h1>
     <div id="chart"></div>
+    <div id="legend" class="legend"></div>
 
     <script>
         // Set the dimensions and margins of the graph
@@ -105,6 +118,17 @@
                     .x(d => x(d.date))
                     .y(d => yRight(d.value))
                 );
+
+            // Add legend
+            const legend = d3.select("#legend");
+            
+            legend.append("div")
+                .attr("class", "legend-item")
+                .html('<svg><rect fill="black"></rect></svg> Sum of Units Sold');
+
+            legend.append("div")
+                .attr("class", "legend-item")
+                .html('<svg><rect fill="green"></rect></svg> Sum of Profit');
         });
     </script>
 </body>

@@ -1,0 +1,17 @@
+h1 {
+  color: crimson;
+  font-size: 2em;
+  font-weight: bold;
+  text-align: center;
+}
+.bar {
+  fill: steelblue;
+}
+.label {
+  font-family: Arial;
+  font-size: 12px;
+  fill: black;
+}
+body {
+  background-color: rgb(202, 231, 145);
+}
